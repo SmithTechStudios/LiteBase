@@ -60,13 +60,7 @@ const fetchTableData = async (tableName: string) => {
   tableError.value = null
   try {
     const response = await axios.get(`${config.apiBaseUrl}/LiteBase/table/${tableName}`)
-    tableData.value = response.data.map((row: any) => {
-      const formattedRow: { [key: string]: any } = {}
-      selectedTableColumns.value.forEach((column, index) => {
-        formattedRow[column.columnName] = row[index]
-      })
-      return formattedRow
-    })
+    tableData.value = response.data;
   } catch (error) {
     console.error(`Error fetching data for table ${tableName}:`, error)
     tableError.value = `Failed to load data for ${tableName}. Please try again.`
@@ -143,9 +137,7 @@ const refreshData = () => {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" class="p-datatable-sm">
                 <Column v-for="col in selectedTableColumns" :key="col.columnName" :field="col.columnName"
                   :header="col.columnName" sortable>
-                  <template #header="{ column }">
-                    <span class="text-gray-700 font-semibold">{{ column.props.header }}</span>
-                  </template>
+
                 </Column>
               </DataTable>
             </div>

@@ -9,28 +9,29 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-      <PackageReference Include="Microsoft.AspNetCore.StaticFiles" />
-      <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.10" />
-      <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.10" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <PackageReference Include="Dapper" Version="2.1.35"/>
+        <PackageReference Include="Microsoft.AspNetCore.StaticFiles"/>
+        <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.10"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.10"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="ui\dist\index.css" />
-      <None Remove="ui\dist\index.html" />
-      <None Remove="ui\dist\index.js" />
-      <None Remove="index.html" />
-      <EmbeddedResource Include="index.html">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
-      <None Remove="ui\dist\litebase.css" />
-      <EmbeddedResource Include="ui\dist\litebase.css">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
-      <None Remove="ui\dist\litebase.js" />
-      <EmbeddedResource Include="ui\dist\litebase.js">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
+        <None Remove="ui\dist\index.css"/>
+        <None Remove="ui\dist\index.html"/>
+        <None Remove="ui\dist\index.js"/>
+        <None Remove="index.html"/>
+        <EmbeddedResource Include="index.html">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <None Remove="ui\dist\litebase.css"/>
+        <EmbeddedResource Include="ui\dist\litebase.css">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+        <None Remove="ui\dist\litebase.js"/>
+        <EmbeddedResource Include="ui\dist\litebase.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
     </ItemGroup>
 
 

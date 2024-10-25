@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Dapper;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 
@@ -37,7 +38,6 @@ public class LiteBaseUIMiddleware
 
             if (resourceStream != null)
             {
-            
                 await resourceStream.CopyToAsync(context.Response.Body);
                 return;
             }
@@ -66,65 +66,38 @@ public class LiteBaseEndpointMiddleware(RequestDelegate next, string dbPath)
     {
         if (context.Request.Path.Equals("/litebase/tables", StringComparison.OrdinalIgnoreCase))
         {
-            await using var db = new SqliteConnection($"Data Source={dbPath}");
-            db.Open();
-
-            var cmd = db.CreateCommand();
-            cmd.CommandText = $"""
-                               SELECT
-                                   m.name as TableName,
-                                   p.name as ColumnName,
-                                   p.type as ColumnType
-                               FROM
-                                   sqlite_master AS m
-                                       JOIN
-                                   pragma_table_info(m.name) AS p
-                               WHERE
-                                   m.type = 'table'
-                               ORDER BY
-                                   m.name,
-                                   p.cid
-                               """;
-
-            List<Row> items = new List<Row>();
-            var reader = await cmd.ExecuteReaderAsync();
-            while (reader.Read())
-            {
-                items.Add(new Row(reader[0].ToString(), reader[1].ToString(), reader[2].ToString()));
-
-
-                /*    for (int i = 0; i < reader.FieldCount; i++)
-                       item.Add(reader[i]); */
-            }
+            await using var connection = new SqliteConnection($"Data Source={dbPath}");
+            // Create a query that retrieves all authors"    
+            var sql = $"""
+                       SELECT
+                           m.name as TableName,
+                           p.name as ColumnName,
+                           p.type as ColumnType
+                       FROM sqlite_master AS m
+                       JOIN pragma_table_info(m.name) AS p
+                       WHERE m.type = 'table'
+                       ORDER BY m.name, p.cid
+                       """;
+            var rows = await connection.QueryAsync<Row>(sql);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(items);
+            await context.Response.WriteAsJsonAsync(rows);
+
             return;
         }
 
         if (context.Request.Path.Value.Contains("/litebase/table/", StringComparison.OrdinalIgnoreCase))
         {
-            await using var db = new SqliteConnection($"Data Source={dbPath}");
-            db.Open();
+            await using var connection = new SqliteConnection($"Data Source={dbPath}");
 
             var tableName = context.Request.Path.Value?.Split("/").Last();
 
-            var cmd = db.CreateCommand();
-            cmd.CommandText = $"SELECT * FROM {tableName.ToLower()}";
+            var sql = $"SELECT * FROM {tableName.ToLower()}";
 
-            List<List<object>> tableItems = new List<List<object>>();
-            var reader = await cmd.ExecuteReaderAsync();
-            while (reader.Read())
-            {
-                var item = new List<Object>();
-                tableItems.Add(item);
-
-                for (int i = 0; i < reader.FieldCount; i++)
-                    item.Add(reader[i]);
-            }
+            var rows = await connection.QueryAsync<object>(sql);
 
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(tableItems);
+            await context.Response.WriteAsJsonAsync(rows);
             return;
         }
 
