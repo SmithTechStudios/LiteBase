@@ -1,0 +1,10 @@
+@SqlLiteUI_HostAddress = http://localhost:5187
+
+GET {{SqlLiteUI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{SqlLiteUI_HostAddress}}/databaseinfo
+Accept: application/json
+
