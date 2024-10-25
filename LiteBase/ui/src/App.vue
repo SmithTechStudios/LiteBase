@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios from 'axios'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -8,28 +9,22 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { config } from './config'
 
-const databaseInfo = ref<DatabaseInfo[] | null>(null)
-const loading = ref(true)
-const error = ref<string | null>(null)
-const searchQuery = ref('')
-
-onMounted(async () => {
-  try {
-    const response = await axios.get<DatabaseInfo[]>(`${config.apiBaseUrl}/LiteBase/tables`)
-    databaseInfo.value = response.data
-  } catch {
-    console.error('Error fetching database info:', error)
-    error.value = 'Failed to load database information. Please try again later.'
-  } finally {
-    loading.value = false
-  }
-})
-
 interface DatabaseInfo {
   tableName: string
   columnName: string
   columnType: string
 }
+
+const searchQuery = ref('')
+const selectedTable = ref<string | null>(null)
+
+const { data: databaseInfo, isLoading, error } = useQuery({
+  queryKey: ['databaseInfo'],
+  queryFn: async () => {
+    const response = await axios.get<DatabaseInfo[]>(`${config.apiBaseUrl}/LiteBase/tables`)
+    return response.data
+  },
+})
 
 const uniqueTableNames = computed(() => {
   return [...new Set(databaseInfo.value?.map(info => info.tableName) || [])]
@@ -41,39 +36,29 @@ const filteredTableNames = computed(() => {
   )
 })
 
-const selectedTable = ref<string | null>(null)
 const selectedTableColumns = computed(() => {
   return databaseInfo.value?.filter(info => info.tableName === selectedTable.value) || []
 })
 
 const selectTable = (tableName: string) => {
   selectedTable.value = tableName
-  fetchTableData(tableName)
 }
 
-const tableData = ref<any[]>([])
-const tableLoading = ref(false)
-const tableError = ref<string | null>(null)
+const {
+  data: tableData,
+  isLoading: tableLoading,
+  error: tableError,
+  refetch: refetchTableData
+} = useQuery({
+  queryKey: ['tableData', selectedTable],
+  queryFn: async () => {
+    if (!selectedTable.value) return []
+    const response = await axios.get(`${config.apiBaseUrl}/LiteBase/table/${selectedTable.value}`)
+    return response.data
+  },
+  enabled: computed(() => !!selectedTable.value),
+})
 
-const fetchTableData = async (tableName: string) => {
-  tableLoading.value = true
-  tableError.value = null
-  try {
-    const response = await axios.get(`${config.apiBaseUrl}/LiteBase/table/${tableName}`)
-    tableData.value = response.data;
-  } catch (error) {
-    console.error(`Error fetching data for table ${tableName}:`, error)
-    tableError.value = `Failed to load data for ${tableName}. Please try again.`
-  } finally {
-    tableLoading.value = false
-  }
-}
-
-const refreshData = () => {
-  if (selectedTable.value) {
-    fetchTableData(selectedTable.value)
-  }
-}
 </script>
 
 <template>
@@ -101,17 +86,17 @@ const refreshData = () => {
     <!-- Main content -->
     <main class="main-content">
       <div class="container mx-auto px-8 py-10">
-        <div v-if="loading" class="flex items-center justify-center h-full">
+        <div v-if="isLoading" class="flex items-center justify-center h-full">
           <ProgressSpinner />
         </div>
         <div v-else-if="error" class="text-red-500">
-          {{ error }}
+          {{ (error as Error).message }}
         </div>
         <div v-else-if="selectedTable" class="shadow-sm rounded-lg overflow-hidden border border-gray-200">
           <div
             class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50">
             <h2 class="text-xl font-semibold text-gray-800">{{ selectedTable }}</h2>
-            <Button icon="pi pi-refresh" @click="refreshData" :loading="tableLoading"
+            <Button icon="pi pi-refresh" @click="() => refetchTableData" :loading="tableLoading"
               class="p-button-text p-button-rounded p-button-plain" />
           </div>
           <div class="p-6">
@@ -128,7 +113,7 @@ const refreshData = () => {
               <ProgressSpinner />
             </div>
             <div v-else-if="tableError" class="text-red-500">
-              {{ tableError }}
+              {{ (tableError as Error).message }}
             </div>
             <div v-else>
               <DataTable :value="tableData" :paginator="true" :rows="10" :rowsPerPageOptions="[10, 20, 50]"
@@ -137,7 +122,6 @@ const refreshData = () => {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" class="p-datatable-sm">
                 <Column v-for="col in selectedTableColumns" :key="col.columnName" :field="col.columnName"
                   :header="col.columnName" sortable>
-
                 </Column>
               </DataTable>
             </div>

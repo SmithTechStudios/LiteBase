@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 import './index.css'
 import App from './App.vue'
 
@@ -21,4 +22,8 @@ app.use(PrimeVue, {
 app.component('Button', Button);
 app.component('ProgressSpinner', ProgressSpinner);
 app.component('InputText', InputText);
+
+// Add VueQueryPlugin to your app
+app.use(VueQueryPlugin);
+
 app.mount('#app')
