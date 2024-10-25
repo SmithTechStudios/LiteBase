@@ -15,19 +15,19 @@ public class LiteBaseUIMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        if (context.Request.Path.StartsWithSegments("/LiteBase/ui"))
+        if (context.Request.Path.StartsWithSegments("/litebase/ui"))
         {
             var assembly = typeof(LiteBaseUIMiddleware).Assembly;
             Stream? resourceStream;
-            if (context.Request.Path.Value.Contains("LiteBase/ui/index.js"))
+            if (context.Request.Path.Value.ToLower().Contains("litebase/ui/index.js"))
             {
                 context.Response.ContentType = "text/javascript";
-                resourceStream = assembly.GetManifestResourceStream("LiteBase.ui.dist.index.js");
+                resourceStream = assembly.GetManifestResourceStream("LiteBase.ui.dist.litebase.js");
             }
-            else if (context.Request.Path.Value.Contains("LiteBase/ui/index.css"))
+            else if (context.Request.Path.Value.ToLower().Contains("litebase/ui/index.css"))
             {
                 context.Response.ContentType = "text/css";
-                resourceStream = assembly.GetManifestResourceStream("LiteBase.ui.dist.index.css");
+                resourceStream = assembly.GetManifestResourceStream("LiteBase.ui.dist.litebase.css");
             }
             else
             {
@@ -64,7 +64,7 @@ public class LiteBaseEndpointMiddleware(RequestDelegate next, string dbPath)
 {
     public async Task Invoke(HttpContext context)
     {
-        if (context.Request.Path.Equals("/LiteBase/tables", StringComparison.OrdinalIgnoreCase))
+        if (context.Request.Path.Equals("/litebase/tables", StringComparison.OrdinalIgnoreCase))
         {
             await using var db = new SqliteConnection($"Data Source={dbPath}");
             db.Open();
@@ -102,7 +102,7 @@ public class LiteBaseEndpointMiddleware(RequestDelegate next, string dbPath)
             return;
         }
 
-        if (context.Request.Path.Value.Contains("/LiteBase/table/", StringComparison.OrdinalIgnoreCase))
+        if (context.Request.Path.Value.Contains("/litebase/table/", StringComparison.OrdinalIgnoreCase))
         {
             await using var db = new SqliteConnection($"Data Source={dbPath}");
             db.Open();
