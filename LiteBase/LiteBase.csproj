@@ -4,8 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.1.0</Version>
+        <Version>0.0.5</Version>
         <RootNamespace>LiteBase</RootNamespace>
     </PropertyGroup>
 
