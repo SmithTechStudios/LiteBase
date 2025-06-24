@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+:root {
+  --neutral-100: var(--p-surface-100);
+  --neutral-200: var(--p-surface-200);
+  --neutral-300: var(--p-surface-300);
+  --neutral-400: var(--p-surface-400);
+  --neutral-500: var(--p-surface-500);
+  --neutral-600: var(--p-surface-600);
+  --neutral-700: var(--p-surface-700);
+  --neutral-800: var(--p-surface-800);
+  --neutral-900: var(--p-surface-900);
+}
+
+.dark {
+  --neutral-100: var(--p-surface-900);
+  --neutral-200: var(--p-surface-800);
+  --neutral-300: var(--p-surface-700);
+  --neutral-400: var(--p-surface-600);
+  --neutral-500: var(--p-surface-500);
+  --neutral-600: var(--p-surface-400);
+  --neutral-700: var(--p-surface-300);
+  --neutral-800: var(--p-surface-200);
+  --neutral-900: var(--p-surface-100);
+}
+
+@theme {
+
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+  --color-neutral-800: var(--neutral-800);
+  --color-neutral-900: var(--neutral-900);
+}
