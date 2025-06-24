@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useQuery } from '@tanstack/vue-query'
 import { useDark, useToggle } from '@vueuse/core'
 import axios from 'axios'
 import Button from 'primevue/button'
