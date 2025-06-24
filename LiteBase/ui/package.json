@@ -9,17 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@primevue/themes": "^4.1.1",
+    "@primeuix/themes": "1.1.2",
     "axios": "^1.7.7",
-    "primeicons": "^7.0.0",
-    "primevue": "^4.1.1",
+    "primevue": "4.3.5",
     "vue": "^3.5.12",
-    "@tanstack/vue-query": "^5.16.1"
+    "@tanstack/vue-query": "^5.16.1",
+    "@iconify/vue": "5.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
-    "autoprefixer": "^10.4.20",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "4.1.10",
     "typescript": "~5.6.2",
     "vite": "^5.4.9",
     "vue-tsc": "^2.1.6"
