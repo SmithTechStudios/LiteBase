@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useDark, useToggle } from '@vueuse/core'
 import axios from 'axios'
@@ -10,6 +10,10 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { Icon } from '@iconify/vue'
 import { config } from './config'
+import dayjs from 'dayjs'
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
+import { auth } from './firebase'
+import Login from './components/Login.vue'
 
 interface DatabaseInfo {
   tableName: string
@@ -19,31 +23,63 @@ interface DatabaseInfo {
 
 const searchQuery = ref('')
 const selectedTable = ref<string | null>(null)
+const isSidebarCollapsed = ref(false)
+const user = ref<User | null>(null)
+const authLoading = ref(true)
 
 // Dark mode functionality
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
+const axiosClient = axios.create({
+  baseURL: config.apiBaseUrl,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Authentication state management
+onMounted(() => {
+  onAuthStateChanged(auth, (firebaseUser: User | null) => {
+    user.value = firebaseUser
+    authLoading.value = false
+    axiosClient.defaults.headers.common['Authorization'] = `Bearer ${firebaseUser?.accessToken}`
+  })
+})
+
+const handleLogout = async () => {
+  try {
+    await signOut(auth)
+  } catch (error) {
+    console.error('Error signing out:', error)
+  }
+}
+
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+}
+
 const { data: databaseInfo, isLoading, error } = useQuery({
   queryKey: ['databaseInfo'],
   queryFn: async () => {
-    const response = await axios.get<DatabaseInfo[]>(`${config.apiBaseUrl}/LiteBase/tables`)
+    const response = await axiosClient.get<DatabaseInfo[]>(`/LiteBase/tables`)
     return response.data
   },
 })
 
-const uniqueTableNames = computed(() => {
-  return [...new Set(databaseInfo.value?.map(info => info.tableName) || [])]
+const uniqueTableNames = computed((): string[] => {
+  const tableNames = databaseInfo.value?.map((info: DatabaseInfo) => info.tableName) || []
+  return Array.from(new Set(tableNames)) as string[]
 })
 
-const filteredTableNames = computed(() => {
-  return uniqueTableNames.value.filter(name =>
+const filteredTableNames = computed((): string[] => {
+  return uniqueTableNames.value.filter((name: string) =>
     name.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
 
 const selectedTableColumns = computed(() => {
-  return databaseInfo.value?.filter(info => info.tableName === selectedTable.value) || []
+  return databaseInfo.value?.filter((info: DatabaseInfo) => info.tableName === selectedTable.value) || []
 })
 
 const selectTable = (tableName: string) => {
@@ -59,7 +95,7 @@ const {
   queryKey: ['tableData', selectedTable],
   queryFn: async () => {
     if (!selectedTable.value) return []
-    const response = await axios.get(`${config.apiBaseUrl}/LiteBase/table/${selectedTable.value}`)
+    const response = await axiosClient.get(`/LiteBase/table/${selectedTable.value}`)
     return response.data
   },
   enabled: computed(() => !!selectedTable.value),
@@ -68,23 +104,46 @@ const {
 </script>
 
 <template>
-  <div class="grid grid-cols-[20rem_1fr] h-screen overflow-hidden bg-white">
+  <!-- Show loading spinner while checking auth state -->
+  <div v-if="authLoading" class="flex items-center justify-center h-screen">
+    <ProgressSpinner />
+  </div>
+
+  <!-- Show login page if not authenticated -->
+  <Login v-else-if="!user" />
+
+  <!-- Show main app if authenticated -->
+  <div v-else
+    :class="['grid h-screen overflow-hidden bg-white transition-all duration-300', isSidebarCollapsed ? 'grid-cols-[4rem_1fr]' : 'grid-cols-[20rem_1fr]']">
     <!-- Sidebar -->
-    <aside class="bg-neutral-100 border-r border-neutral-200 overflow-y-auto">
-      <div class="p-6">
-        <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-neutral-800">Database Explorer</h1>
-          <Button @click="() => toggleDark()">
-            <Icon :icon="isDark ? 'ph:sun-bold' : 'ph:moon-bold'" />
-          </Button>
+    <aside class="bg-neutral-100 border-r border-neutral-200 overflow-y-auto transition-all duration-300 flex flex-col">
+      <div :class="['transition-all duration-300', isSidebarCollapsed ? 'p-2' : 'p-6']">
+        <div :class="['flex items-center', isSidebarCollapsed ? 'justify-center' : 'justify-between']">
+          <h1 v-show="!isSidebarCollapsed" class="text-2xl font-bold text-neutral-800 transition-opacity duration-300">
+            Database Explorer</h1>
+          <div class="flex gap-2">
+            <Button @click="toggleSidebar" class="p-button-text p-button-rounded"
+              :aria-label="isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+              <Icon :icon="isSidebarCollapsed ? 'ph:sidebar-simple-fill' : 'ph:sidebar-simple'" class="text-lg" />
+            </Button>
+            <Button v-show="!isSidebarCollapsed" @click="() => toggleDark()"
+              class="p-button-text p-button-rounded transition-opacity duration-300">
+              <Icon :icon="isDark ? 'ph:sun-bold' : 'ph:moon-bold'" />
+            </Button>
+            <Button v-show="!isSidebarCollapsed" @click="handleLogout"
+              class="p-button-text p-button-rounded transition-opacity duration-300" title="Logout">
+              <Icon icon="ph:sign-out" />
+            </Button>
+          </div>
         </div>
       </div>
-      <div class="px-6 mb-6">
+      <div v-show="!isSidebarCollapsed" class="px-6 mb-6 transition-opacity duration-300">
         <InputText v-model="searchQuery" placeholder="Search tables"
           class="w-full text-neutral-700 border border-neutral-300 rounded-md bg-white placeholder-neutral-500" />
       </div>
-      <nav>
-        <ul>
+      <nav class="transition-opacity duration-300 flex-1">
+        <!-- Expanded view -->
+        <ul v-show="!isSidebarCollapsed">
           <li v-for="tableName in filteredTableNames" :key="tableName" @click="selectTable(tableName)" :class="[
             'px-6 py-3 cursor-pointer transition-colors duration-200',
             selectedTable === tableName
@@ -92,6 +151,17 @@ const {
               : 'text-neutral-600 hover:bg-neutral-50'
           ]">
             {{ tableName }}
+          </li>
+        </ul>
+        <!-- Collapsed view - show icons only -->
+        <ul v-show="isSidebarCollapsed" class="py-2">
+          <li v-for="tableName in filteredTableNames" :key="tableName" @click="selectTable(tableName)" :class="[
+            'flex items-center justify-center py-2 cursor-pointer transition-colors duration-200',
+            selectedTable === tableName
+              ? 'bg-blue-800/20 text-blue-600'
+              : 'text-neutral-600 hover:bg-neutral-50'
+          ]" :title="tableName">
+            <Icon icon="ph:table" class="text-lg" />
           </li>
         </ul>
       </nav>
@@ -137,6 +207,27 @@ const {
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords}" class="p-datatable-sm">
                 <Column v-for="col in selectedTableColumns" :key="col.columnName" :field="col.columnName"
                   :header="col.columnName" sortable>
+
+                  <template #body="{ data, field }">
+                    <span v-if="col.columnType === 'TEXT' && data[field as keyof typeof data]?.includes('https://')">
+                      <img class="size-15" :src="data[field as keyof typeof data]" />
+                    </span>
+
+                    <span v-else-if="col.columnType === 'TEXT' && dayjs(data[field as keyof typeof data]).isValid()">
+                      {{ dayjs(data[field as keyof typeof data]).format('DD-MM-YYYY HH:mm') }}
+                    </span>
+                    <span v-else class="line-clamp-2 truncate">
+                      <span
+                        v-if="typeof data[field as keyof typeof data] === 'number' && !Number.isInteger(data[field as keyof typeof data])">
+                        {{ data[field as keyof typeof data]?.toFixed(2) }}
+                      </span>
+                      <span v-else>
+                        {{ data[field as keyof typeof data]?.toString()?.substring(0, 200) }}
+                        <span v-if="data[field as keyof typeof data]?.toString()?.length > 50">...</span>
+                      </span>
+                    </span>
+                  </template>
+
                 </Column>
               </DataTable>
             </div>
@@ -149,24 +240,3 @@ const {
     </main>
   </div>
 </template>
-
-<style>
-/* Custom scrollbar styles - these can't be easily replicated with Tailwind */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
-}
-</style>

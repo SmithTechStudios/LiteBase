@@ -15,7 +15,9 @@
     "primevue": "4.3.5",
     "vue": "^3.5.12",
     "@tanstack/vue-query": "^5.16.1",
-    "@iconify/vue": "5.0.0"
+    "@iconify/vue": "5.0.0",
+    "dayjs": "1.11.19",
+    "firebase": "12.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
