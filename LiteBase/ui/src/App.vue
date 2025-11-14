@@ -40,16 +40,18 @@ const axiosClient = axios.create({
 
 // Authentication state management
 onMounted(() => {
-  onAuthStateChanged(auth, (firebaseUser: User | null) => {
+  onAuthStateChanged(auth, async (firebaseUser) => {
     user.value = firebaseUser
     authLoading.value = false
-    axiosClient.defaults.headers.common['Authorization'] = `Bearer ${firebaseUser?.accessToken}`
+    const token = await firebaseUser?.getIdToken()
+    axiosClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
   })
 })
 
 const handleLogout = async () => {
   try {
     await signOut(auth)
+    axiosClient.defaults.headers.common['Authorization'] = ''
   } catch (error) {
     console.error('Error signing out:', error)
   }
