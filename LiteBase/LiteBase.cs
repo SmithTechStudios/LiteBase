@@ -5,6 +5,22 @@ using Microsoft.Data.Sqlite;
 
 namespace LiteBase;
 
+public class LiteBaseOptions
+{
+    public required string DbPath { get; set; }
+    public FirebaseConfig? Firebase { get; set; }
+}
+
+public class FirebaseConfig
+{
+    public required string ApiKey { get; set; }
+    public required string AuthDomain { get; set; }
+    public required string ProjectId { get; set; }
+    public required string StorageBucket { get; set; }
+    public required string MessagingSenderId { get; set; }
+    public required string AppId { get; set; }
+}
+
 public class LiteBaseUIMiddleware
 {
     private readonly RequestDelegate _next;
@@ -54,19 +70,26 @@ public static class LiteBaseUIMiddlewareExtensions
         return builder.UseMiddleware<LiteBaseUIMiddleware>();
     }
 
-    public static IApplicationBuilder UseLiteBaseEndpoint(this IApplicationBuilder builder, string dbPath)
+    public static IApplicationBuilder UseLiteBaseEndpoint(this IApplicationBuilder builder, LiteBaseOptions options)
     {
-        return builder.UseMiddleware<LiteBaseEndpointMiddleware>(dbPath);
+        return builder.UseMiddleware<LiteBaseEndpointMiddleware>(options);
     }
 }
 
-public class LiteBaseEndpointMiddleware(RequestDelegate next, string dbPath)
+public class LiteBaseEndpointMiddleware(RequestDelegate next, LiteBaseOptions options)
 {
     public async Task Invoke(HttpContext context)
     {
+        if (context.Request.Path.Equals("/litebase/config", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(options.Firebase);
+            return;
+        }
+
         if (context.Request.Path.Equals("/litebase/tables", StringComparison.OrdinalIgnoreCase))
         {
-            await using var connection = new SqliteConnection($"Data Source={dbPath}");
+            await using var connection = new SqliteConnection($"Data Source={options.DbPath}");
             // Create a query that retrieves all authors"    
             var sql = $"""
                        SELECT
@@ -88,7 +111,7 @@ public class LiteBaseEndpointMiddleware(RequestDelegate next, string dbPath)
 
         if (context.Request.Path.Value.Contains("/litebase/table/", StringComparison.OrdinalIgnoreCase))
         {
-            await using var connection = new SqliteConnection($"Data Source={dbPath}");
+            await using var connection = new SqliteConnection($"Data Source={options.DbPath}");
 
             var tableName = context.Request.Path.Value?.Split("/").Last();
 

@@ -45,6 +45,18 @@ app.UseCors();
 app.UseStaticFiles();
 
 app.UseLiteBaseUi();
-app.UseLiteBaseEndpoint("db/blogging.db");
+app.UseLiteBaseEndpoint(new LiteBaseOptions
+{
+    DbPath = "db/blogging.db",
+    Firebase = new FirebaseConfig
+    {
+        ApiKey = "AIzaSyCqB7VHM1-t_3gOrpXKUIB2gMs4DqirrpA",
+        AuthDomain = "bgquest.app",
+        ProjectId = "boardgame-tracker-2498e",
+        StorageBucket = "boardgame-tracker-2498e.firebasestorage.app",
+        MessagingSenderId = "483970449590",
+        AppId = "1:483970449590:web:07fe9000eaf7b4bbf32617"
+    }
+});
 
 app.Run();
