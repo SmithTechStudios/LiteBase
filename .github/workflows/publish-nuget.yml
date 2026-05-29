@@ -64,9 +64,15 @@ jobs:
         run: dotnet pack LiteBase/LiteBase.csproj -c Release -o ./artifacts --no-build /p:GeneratePackageOnBuild=false
 
       - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::error::NUGET_API_KEY secret is not configured. Add it under GitHub repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
           dotnet nuget push ./artifacts/*.nupkg \
-            --api-key "${{ secrets.NUGET_API_KEY }}" \
+            --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
