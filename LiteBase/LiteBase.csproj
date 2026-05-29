@@ -7,12 +7,18 @@
         <Version>0.1.1</Version>
         <RootNamespace>LiteBase</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
         <Authors>SmithTechStudios</Authors>
         <Description>Embeddable SQLite database explorer UI for ASP.NET Core applications.</Description>
         <PackageProjectUrl>https://github.com/SmithTechStudios/LiteBase</PackageProjectUrl>
         <RepositoryUrl>https://github.com/SmithTechStudios/LiteBase.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="*.cs"/>
+    </ItemGroup>
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App"/>
@@ -23,16 +29,16 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="ui\dist\index.css"/>
-        <None Remove="ui\dist\index.html"/>
-        <None Remove="ui\dist\index.js"/>
+        <None Remove="ui/dist/index.css"/>
+        <None Remove="ui/dist/index.html"/>
+        <None Remove="ui/dist/index.js"/>
         <None Remove="index.html"/>
-        <None Remove="ui\dist\litebase.css"/>
-        <EmbeddedResource Include="ui\dist\litebase.css">
+        <None Remove="ui/dist/litebase.css"/>
+        <EmbeddedResource Include="ui/dist/litebase.css">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </EmbeddedResource>
-        <None Remove="ui\dist\litebase.js"/>
-        <EmbeddedResource Include="ui\dist\litebase.js">
+        <None Remove="ui/dist/litebase.js"/>
+        <EmbeddedResource Include="ui/dist/litebase.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </EmbeddedResource>
     </ItemGroup>
