@@ -22,9 +22,6 @@
         <None Remove="ui\dist\index.html"/>
         <None Remove="ui\dist\index.js"/>
         <None Remove="index.html"/>
-        <EmbeddedResource Include="index.html">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </EmbeddedResource>
         <None Remove="ui\dist\litebase.css"/>
         <EmbeddedResource Include="ui\dist\litebase.css">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

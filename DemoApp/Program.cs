@@ -2,6 +2,7 @@ using LiteBase;
 using SqlLiteUI;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddScoped<ILiteBaseAccess, AllowAllAccess>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -45,7 +46,7 @@ app.UseCors();
 app.UseStaticFiles();
 
 app.UseLiteBaseUi();
-app.UseLiteBaseEndpoint(new LiteBaseOptions
+app.MapLiteBase(new LiteBaseOptions
 {
     DbPath = "db/blogging.db",
     Firebase = new FirebaseConfig
@@ -60,3 +61,8 @@ app.UseLiteBaseEndpoint(new LiteBaseOptions
 });
 
 app.Run();
+
+public class AllowAllAccess : ILiteBaseAccess
+{
+    public Task<bool> IsAuthorizedAsync() => Task.FromResult(true);
+}
