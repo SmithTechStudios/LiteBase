@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useDark } from '@vueuse/core'
 
 const props = defineProps<{
   tableNames: string[]
@@ -14,9 +15,8 @@ const emit = defineEmits<{
 const searchQuery = ref('')
 const isSidebarCollapsed = ref(false)
 
-const colorMode = useColorMode()
-const isDark = computed(() => colorMode.value === 'dark')
-const toggleDark = () => { colorMode.preference = isDark.value ? 'light' : 'dark' }
+const isDark = useDark()
+const toggleDark = () => { isDark.value = !isDark.value }
 
 const filteredTableNames = computed(() =>
   props.tableNames.filter(name =>
