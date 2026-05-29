@@ -30,6 +30,7 @@ const friendlyError = (err: unknown): string => {
 </script>
 
 <template>
+  <UApp>
   <div v-if="authLoading" class="flex items-center justify-center h-screen">
     <UIcon name="ph:spinner" class="animate-spin text-4xl text-neutral-400" />
   </div>
@@ -70,4 +71,5 @@ const friendlyError = (err: unknown): string => {
       </div>
     </main>
   </div>
+  </UApp>
 </template>
