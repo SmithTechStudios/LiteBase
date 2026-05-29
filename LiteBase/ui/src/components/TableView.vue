@@ -98,7 +98,7 @@ const handleSave = async (rowid: unknown, body: Record<string, unknown>) => {
           </template>
           <template v-for="col in visibleColumns" :key="col.columnName" #[`${col.columnName}-cell`]="{ row }">
             <img v-if="isImageUrl(col, row.original[col.columnName])" class="size-15" :src="row.original[col.columnName] as string" />
-            <span v-else class="line-clamp-2 truncate">{{ formatCell(col, row.original[col.columnName]) }}</span>
+            <span v-else class="line-clamp-2">{{ formatCell(col, row.original[col.columnName]) }}</span>
           </template>
         </UTable>
 
