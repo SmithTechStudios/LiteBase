@@ -46,19 +46,21 @@ defineExpose({ openModal, setError })
   <UModal v-model:open="open" title="Edit Row">
     <template #body>
       <div class="flex flex-col gap-4">
-        <div v-for="col in columns" :key="col.columnName" class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            {{ col.columnName }}
-            <span class="text-neutral-400 font-normal ml-1">({{ col.columnType }})</span>
-            <span v-if="col.isPrimaryKey !== 0" class="text-xs text-blue-500 ml-1">PK</span>
-          </label>
+        <UFormField v-for="col in columns" :key="col.columnName"
+          :label="col.columnName"
+          :description="col.isPrimaryKey !== 0 ? 'Primary key — read only' : undefined">
+          <template #label>
+            <span>{{ col.columnName }}</span>
+            <UBadge v-if="col.isPrimaryKey !== 0" label="PK" variant="subtle" color="neutral" size="sm" class="ml-2" />
+            <UBadge :label="col.columnType" variant="soft" color="neutral" size="sm" class="ml-1" />
+          </template>
           <UInput v-if="col.columnType !== 'BLOB'"
             v-model="(editRow as Record<string, unknown>)[col.columnName] as string"
             :type="col.columnType === 'INTEGER' || col.columnType === 'REAL' ? 'number' : 'text'"
             :disabled="col.isPrimaryKey !== 0"
             class="w-full" />
-          <UInput v-else disabled model-value="[BLOB data]" class="w-full opacity-50" />
-        </div>
+          <UInput v-else disabled model-value="[BLOB data]" class="w-full" />
+        </UFormField>
         <UAlert v-if="error" color="error" :description="error" />
       </div>
     </template>
