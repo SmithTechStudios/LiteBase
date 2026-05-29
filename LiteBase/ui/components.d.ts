@@ -24,8 +24,10 @@ declare module 'vue' {
     UIcon: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
     UInput: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
     UModal: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
+    UNavigationMenu: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']
     UPagination: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Pagination.vue')['default']
     USelect: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+    USidebar: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Sidebar.vue')['default']
     UTable: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
   }
 }
