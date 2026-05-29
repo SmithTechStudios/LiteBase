@@ -7,6 +7,11 @@
         <Version>0.1.1</Version>
         <RootNamespace>LiteBase</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>SmithTechStudios</Authors>
+        <Description>Embeddable SQLite database explorer UI for ASP.NET Core applications.</Description>
+        <PackageProjectUrl>https://github.com/SmithTechStudios/LiteBase</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/SmithTechStudios/LiteBase.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
     </PropertyGroup>
 
     <ItemGroup>
