@@ -1,17 +1,19 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import tailwindcss from '@tailwindcss/vite'
+import ui from '@nuxt/ui/vite'
 
-// https://vite.dev/config/
 export default defineConfig({
-  /* @ts-ignore */
-    plugins: [vue(), tailwindcss()],
+  plugins: [
+    vue(),
+    ui(),
+  ],
   build: {
     rollupOptions: {
       output: {
-        entryFileNames: `litebase.js`,
-        assetFileNames: `litebase.[ext]`
-      }
-    }
+        entryFileNames: 'litebase.js',
+        chunkFileNames: 'litebase.js',
+        assetFileNames: 'litebase.css',
+      },
+    },
   },
 })
