@@ -5,7 +5,7 @@ import ui from '@nuxt/ui/vite'
 export default defineConfig({
   plugins: [
     vue(),
-    ui(),
+    ui({ router: false }),
   ],
   build: {
     rollupOptions: {

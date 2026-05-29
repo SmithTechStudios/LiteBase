@@ -15,5 +15,13 @@ declare module 'vue' {
     Login: typeof import('./src/components/Login.vue')['default']
     Sidebar: typeof import('./src/components/Sidebar.vue')['default']
     TableView: typeof import('./src/components/TableView.vue')['default']
+    UAlert: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Alert.vue')['default']
+    UButton: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
+    UIcon: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/vue/components/Icon.vue')['default']
+    UInput: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
+    UModal: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Modal.vue')['default']
+    UPagination: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Pagination.vue')['default']
+    USelect: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
+    UTable: typeof import('./node_modules/.pnpm/@nuxt+ui@4.8.1_@internationalized+date@3.12.2_@internationalized+number@3.6.7_@tiptap+e_9aeb3ecedc7710fdaf32d9b915357f4b/node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
   }
 }
