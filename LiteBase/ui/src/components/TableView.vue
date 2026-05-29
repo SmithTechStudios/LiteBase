@@ -69,7 +69,7 @@ const handleSave = async (rowid: unknown, body: Record<string, unknown>) => {
       <UButton variant="ghost" color="neutral" icon="ph:arrows-clockwise" :loading="tableLoading" @click="emit('refetch')" />
     </div>
 
-    <UCard>
+    <UCard :ui="{ root: 'shadow-lg' }">
       <template #header>
         <p class="font-medium">Table Columns</p>
       </template>
@@ -81,7 +81,7 @@ const handleSave = async (rowid: unknown, body: Record<string, unknown>) => {
       </div>
     </UCard>
 
-    <UCard>
+    <UCard :ui="{ root: 'shadow-lg' }">
       <template #header>
         <p class="font-medium">Table Data</p>
       </template>
