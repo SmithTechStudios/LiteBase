@@ -25,9 +25,9 @@ public class LiteBaseUIMiddleware
 
         var (contentType, resourceName) = path.ToLower() switch
         {
-            var p when p.Contains("index.js")  => ("text/javascript", "LiteBase.ui.dist.litebase.js"),
-            var p when p.Contains("index.css") => ("text/css",        "LiteBase.ui.dist.litebase.css"),
-            _                                  => ("text/html",        "LiteBase.index.html")
+            var p when p.Contains("litebase.js")  => ("text/javascript", "LiteBase.ui.dist.litebase.js"),
+            var p when p.Contains("litebase.css") => ("text/css",        "LiteBase.ui.dist.litebase.css"),
+            _                                     => ("text/html",       "LiteBase.ui.dist.index.html")
         };
 
         var stream = assembly.GetManifestResourceStream(resourceName);
