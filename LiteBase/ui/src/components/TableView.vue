@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { refDebounced, useMediaQuery } from '@vueuse/core'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import type { TableColumn } from '@nuxt/ui'
@@ -21,18 +22,83 @@ const emit = defineEmits<{
 
 const editModal = ref<InstanceType<typeof EditRowModal> | null>(null)
 
+const isMobile = useMediaQuery('(max-width: 639px)')
+
 const page = ref(1)
 const pageSize = ref(10)
+const search = ref('')
+const debouncedSearch = refDebounced(search, 200)
+const sortColumn = ref<string | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
 
 const tableColumns = computed(() => [
-  { id: 'actions', header: '', enableSorting: false },
-  ...props.visibleColumns.map(col => ({ accessorKey: col.columnName, header: col.columnName, enableSorting: true }))
+  { id: 'actions', header: '' },
+  ...props.visibleColumns.map(col => ({ id: col.columnName, accessorFn: (row: Record<string, unknown>) => row[col.columnName], header: col.columnName }))
 ] as TableColumn<Record<string, unknown>>[])
 
-const paginatedRows = computed(() => {
+const filteredRows = computed(() => {
   const data = props.tableData ?? []
+  const term = debouncedSearch.value.trim().toLowerCase()
+  if (!term) return data
+  return data.filter(row =>
+    props.visibleColumns.some(col => {
+      const value = row[col.columnName]
+      if (value == null) return false
+      return String(value).toLowerCase().includes(term) || formatCell(col, value).toLowerCase().includes(term)
+    })
+  )
+})
+
+const compareValues = (a: unknown, b: unknown): number => {
+  if (typeof a === 'number' && typeof b === 'number') return a - b
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' })
+}
+
+const sortedRows = computed(() => {
+  const column = sortColumn.value
+  if (!column) return filteredRows.value
+  const direction = sortDirection.value === 'asc' ? 1 : -1
+  return [...filteredRows.value].sort((x, y) => {
+    const a = x[column]
+    const b = y[column]
+    // Empty values (null or blank text) always sort last, regardless of direction
+    const aEmpty = a == null || a === ''
+    const bEmpty = b == null || b === ''
+    if (aEmpty && bEmpty) return 0
+    if (aEmpty) return 1
+    if (bEmpty) return -1
+    return compareValues(a, b) * direction
+  })
+})
+
+const paginatedRows = computed(() => {
   const start = (page.value - 1) * pageSize.value
-  return data.slice(start, start + pageSize.value)
+  return sortedRows.value.slice(start, start + pageSize.value)
+})
+
+const rangeStart = computed(() => sortedRows.value.length === 0 ? 0 : (page.value - 1) * pageSize.value + 1)
+const rangeEnd = computed(() => Math.min(page.value * pageSize.value, sortedRows.value.length))
+
+const toggleSort = (column: string) => {
+  if (sortColumn.value !== column) {
+    sortColumn.value = column
+    sortDirection.value = 'asc'
+  } else if (sortDirection.value === 'asc') {
+    sortDirection.value = 'desc'
+  } else {
+    sortColumn.value = null
+  }
+}
+
+const sortIcon = (column: string) => {
+  if (sortColumn.value !== column) return 'ph:arrows-down-up'
+  return sortDirection.value === 'asc' ? 'ph:sort-ascending' : 'ph:sort-descending'
+}
+
+watch([debouncedSearch, pageSize, sortColumn, sortDirection], () => { page.value = 1 })
+// Keep the page in range if a refetch returns fewer rows
+watch(() => sortedRows.value.length, (count) => {
+  page.value = Math.min(page.value, Math.max(1, Math.ceil(count / pageSize.value)))
 })
 
 const friendlyError = (err: unknown): string => {
@@ -41,8 +107,11 @@ const friendlyError = (err: unknown): string => {
   return err instanceof Error ? err.message : 'An unexpected error occurred.'
 }
 
+// Only treat ISO-like strings as dates; dayjs happily parses e.g. 'Post 47' as the year 2047
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}/
+
 const formatCell = (col: DatabaseInfo, value: unknown): string => {
-  if (col.columnType === 'TEXT' && typeof value === 'string' && dayjs(value).isValid())
+  if (col.columnType === 'TEXT' && typeof value === 'string' && isoDatePattern.test(value) && dayjs(value).isValid())
     return dayjs(value).format('DD-MM-YYYY HH:mm')
   if (typeof value === 'number' && !Number.isInteger(value))
     return value.toFixed(2)
@@ -63,27 +132,38 @@ const handleSave = async (rowid: unknown, body: Record<string, unknown>) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold">{{ tableName }}</h2>
-      <UButton variant="ghost" color="neutral" icon="ph:arrows-clockwise" :loading="tableLoading" @click="emit('refetch')" />
+  <div class="flex flex-col gap-4 sm:gap-6">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-lg sm:text-xl font-semibold truncate">{{ tableName }}</h2>
+      <UButton variant="ghost" color="neutral" icon="ph:arrows-clockwise" aria-label="Refresh" :loading="tableLoading" @click="emit('refetch')" />
     </div>
 
-    <UCard :ui="{ root: 'shadow-lg' }">
-      <template #header>
-        <p class="font-medium">Table Columns</p>
+    <UCollapsible :default-open="!isMobile" :unmount-on-hide="false">
+      <UButton variant="ghost" color="neutral" class="w-full justify-between px-0 font-medium" trailing-icon="ph:caret-down"
+        :ui="{ trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200' }">
+        Table Columns ({{ columns.length }})
+      </UButton>
+      <template #content>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-2">
+          <UBadge v-for="column in columns" :key="column.columnName" variant="subtle" color="neutral" class="justify-start min-w-0">
+            <span class="font-medium truncate">{{ column.columnName }}</span>
+            <span class="opacity-60 ml-1 shrink-0">({{ column.columnType }})</span>
+          </UBadge>
+        </div>
       </template>
-      <div class="grid grid-cols-2 gap-2">
-        <UBadge v-for="column in columns" :key="column.columnName" variant="subtle" color="neutral" class="justify-start">
-          <span class="font-medium">{{ column.columnName }}</span>
-          <span class="opacity-60 ml-1">({{ column.columnType }})</span>
-        </UBadge>
-      </div>
-    </UCard>
+    </UCollapsible>
 
-    <UCard :ui="{ root: 'shadow-lg' }">
+    <UCard :ui="{ root: 'shadow-lg', header: 'p-3 sm:px-6', body: 'p-0 sm:p-0' }">
       <template #header>
-        <p class="font-medium">Table Data</p>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p class="font-medium">Table Data</p>
+          <UInput v-model="search" icon="ph:magnifying-glass" placeholder="Search rows..." class="w-full sm:w-72"
+            :ui="{ trailing: 'pe-1' }">
+            <template v-if="search" #trailing>
+              <UButton color="neutral" variant="link" size="sm" icon="ph:x" aria-label="Clear search" @click="search = ''" />
+            </template>
+          </UInput>
+        </div>
       </template>
 
       <div v-if="tableLoading" class="flex justify-center py-8">
@@ -96,20 +176,34 @@ const handleSave = async (rowid: unknown, body: Record<string, unknown>) => {
         <p class="text-(--ui-text-muted)">{{ friendlyError(tableError) }}</p>
       </div>
       <template v-else>
-        <UTable :columns="tableColumns" :data="paginatedRows">
+        <UTable :columns="tableColumns" :data="paginatedRows" sticky
+          :empty="debouncedSearch ? `No rows match '${debouncedSearch}'` : 'No rows in this table'"
+          :ui="{ root: 'max-h-[70vh]', th: 'px-2 sm:px-4 whitespace-nowrap', td: 'px-2 sm:px-4 py-2 sm:py-3 max-w-xs' }">
           <template #actions-cell="{ row }">
-            <UButton variant="ghost" color="neutral" size="xs" icon="ph:pencil-simple"
+            <UButton variant="ghost" color="neutral" size="xs" icon="ph:pencil-simple" aria-label="Edit row"
               @click="editModal?.openModal(row.original as Record<string, unknown>)" />
+          </template>
+          <template v-for="col in visibleColumns" :key="`${col.columnName}-header`" #[`${col.columnName}-header`]>
+            <UButton variant="ghost" color="neutral" size="sm" class="-mx-2.5 font-semibold"
+              :label="col.columnName"
+              :trailing-icon="sortIcon(col.columnName)"
+              :ui="{ trailingIcon: sortColumn === col.columnName ? 'text-primary' : 'opacity-40' }"
+              :aria-label="`Sort by ${col.columnName}`"
+              @click="toggleSort(col.columnName)" />
           </template>
           <template v-for="col in visibleColumns" :key="col.columnName" #[`${col.columnName}-cell`]="{ row }">
             <img v-if="isImageUrl(col, row.original[col.columnName])" class="size-10 rounded object-cover" :src="row.original[col.columnName] as string" />
-            <span v-else class="line-clamp-2">{{ formatCell(col, row.original[col.columnName]) }}</span>
+            <span v-else class="line-clamp-2 break-words">{{ formatCell(col, row.original[col.columnName]) }}</span>
           </template>
         </UTable>
 
-        <div class="flex justify-between items-center mt-4 pt-4 border-t border-(--ui-border)">
-          <USelect v-model="pageSize" :items="[10, 20, 50]" class="w-20" />
-          <UPagination v-model:page="page" :total="tableData?.length ?? 0" :items-per-page="pageSize" />
+        <div class="flex flex-wrap justify-between items-center gap-3 p-3 sm:px-6 border-t border-(--ui-border)">
+          <div class="flex items-center gap-2 text-sm text-(--ui-text-muted)">
+            <USelect v-model="pageSize" :items="[10, 20, 50, 100]" class="w-20" aria-label="Rows per page" />
+            <span>{{ rangeStart }}–{{ rangeEnd }} of {{ sortedRows.length }}<template v-if="debouncedSearch"> (filtered from {{ tableData?.length ?? 0 }})</template></span>
+          </div>
+          <UPagination v-model:page="page" :total="sortedRows.length" :items-per-page="pageSize"
+            :sibling-count="isMobile ? 0 : 1" :show-edges="!isMobile" size="sm" />
         </div>
       </template>
 
