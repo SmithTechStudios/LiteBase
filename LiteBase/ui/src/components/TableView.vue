@@ -61,10 +61,12 @@ const sortedRows = computed(() => {
   return [...filteredRows.value].sort((x, y) => {
     const a = x[column]
     const b = y[column]
-    // Nulls always sort last, regardless of direction
-    if (a == null && b == null) return 0
-    if (a == null) return 1
-    if (b == null) return -1
+    // Empty values (null or blank text) always sort last, regardless of direction
+    const aEmpty = a == null || a === ''
+    const bEmpty = b == null || b === ''
+    if (aEmpty && bEmpty) return 0
+    if (aEmpty) return 1
+    if (bEmpty) return -1
     return compareValues(a, b) * direction
   })
 })
