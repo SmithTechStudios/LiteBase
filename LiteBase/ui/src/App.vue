@@ -119,7 +119,9 @@ const friendlyError = (err: unknown): string => {
                 class="text-5xl text-muted" />
               <p class="text-muted">{{ friendlyError(error) }}</p>
             </div>
+            <!-- Keyed by table so paging, sorting and search reset when switching tables -->
             <TableView v-else-if="selectedTable"
+              :key="selectedTable"
               :table-name="selectedTable"
               :columns="selectedTableColumns"
               :visible-columns="visibleTableColumns"

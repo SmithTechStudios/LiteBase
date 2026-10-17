@@ -94,10 +94,9 @@ const sortIcon = (column: string) => {
 }
 
 watch([debouncedSearch, pageSize, sortColumn, sortDirection], () => { page.value = 1 })
-watch(() => props.tableName, () => {
-  search.value = ''
-  sortColumn.value = null
-  page.value = 1
+// Keep the page in range if a refetch returns fewer rows
+watch(() => sortedRows.value.length, (count) => {
+  page.value = Math.min(page.value, Math.max(1, Math.ceil(count / pageSize.value)))
 })
 
 const friendlyError = (err: unknown): string => {
