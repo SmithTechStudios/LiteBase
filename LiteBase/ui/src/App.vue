@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import { useDark } from '@vueuse/core'
+import { useDark, useMediaQuery } from '@vueuse/core'
 import type { NavigationMenuItem } from '@nuxt/ui'
 import Login from './components/Login.vue'
 import TableView from './components/TableView.vue'
@@ -11,6 +11,8 @@ import { useTableData } from './composables/useTableData'
 const { user, authLoading, handleLogout } = useAuth()
 const selectedTable = ref<string | null>(null)
 const sidebarOpen = ref(true)
+// Matches the breakpoint at which USidebar switches to its mobile slideover
+const isMobile = useMediaQuery('(max-width: 1023px)')
 
 const isDark = useDark()
 const toggleDark = () => { isDark.value = !isDark.value }
@@ -32,7 +34,10 @@ const navItems = computed<NavigationMenuItem[]>(() =>
     label: name,
     icon: 'ph:table',
     active: selectedTable.value === name,
-    onSelect: () => { selectedTable.value = name },
+    onSelect: () => {
+      selectedTable.value = name
+      if (isMobile.value) sidebarOpen.value = false
+    },
   }))
 )
 
@@ -92,7 +97,7 @@ const friendlyError = (err: unknown): string => {
       </USidebar>
 
       <div class="flex-1 flex flex-col overflow-hidden">
-        <div class="h-(--ui-header-height) shrink-0 flex items-center px-4 border-b border-default">
+        <div class="h-(--ui-header-height) shrink-0 flex items-center gap-2 px-2 sm:px-4 border-b border-default">
           <UButton
             icon="ph:sidebar-simple"
             color="neutral"
@@ -100,10 +105,11 @@ const friendlyError = (err: unknown): string => {
             aria-label="Toggle sidebar"
             @click="sidebarOpen = !sidebarOpen"
           />
+          <span class="lg:hidden font-semibold truncate">{{ selectedTable ?? 'Litebase' }}</span>
         </div>
 
         <main class="flex-1 overflow-y-auto bg-default">
-          <div class="container mx-auto px-8 py-10">
+          <div class="container mx-auto px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-10">
             <div v-if="isLoading" class="flex items-center justify-center py-16">
               <UIcon name="ph:spinner" class="animate-spin text-4xl" />
             </div>
@@ -123,7 +129,10 @@ const friendlyError = (err: unknown): string => {
               @refetch="refetchTableData"
             />
             <div v-else class="flex items-center justify-center py-16">
-              <p class="text-muted">Select a table from the sidebar to view its data.</p>
+              <p class="text-muted text-center">
+                <span class="lg:hidden">Open the menu to pick a table.</span>
+                <span class="hidden lg:inline">Select a table from the sidebar to view its data.</span>
+              </p>
             </div>
           </div>
         </main>
